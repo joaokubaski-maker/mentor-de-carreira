@@ -1,0 +1,129 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "toc_visible": true,
+      "authorship_tag": "ABX9TyOKFB2jwR8XyCTSyzBEYNFs",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/joaokubaski-maker/Amemflix/blob/main/trabalho%2C_alura.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "rEkQa0-0ns_2"
+      },
+      "outputs": [],
+      "source": [
+        "!pip install -q -U openai\n",
+        "\n",
+        "from openai import OpenAI\n",
+        "from google.colab import userdata\n",
+        "\n",
+        "# Recupera a chave dos Secrets\n",
+        "api_key = userdata.get(\"OPENROUTER_API_KEY\")\n",
+        "\n",
+        "if not api_key:\n",
+        "    raise ValueError(\"Chave da API não encontrada!\")\n",
+        "\n",
+        "# Conecta ao OpenRouter\n",
+        "client = OpenAI(\n",
+        "    base_url=\"https://openrouter.ai/api/v1\",\n",
+        "    api_key=api_key\n",
+        ")\n",
+        "\n",
+        "# Instruções do mentor\n",
+        "instructions = \"\"\"\n",
+        "Você é um mentor de carreiras profissional.\n",
+        "Ajude as pessoas a descobrirem profissões\n",
+        "compatíveis com seus interesses.\n",
+        "Utilize linguagem simples e objetiva.\n",
+        "\"\"\"\n",
+        "\n",
+        "# Prompt curto\n",
+        "prompt_curto = \"Gosto de tecnologia. Quais carreiras posso seguir?\"\n",
+        "\n",
+        "# Prompt detalhado\n",
+        "prompt_detalhado = \"\"\"\n",
+        "Tenho 20 anos e gosto muito de tecnologia, computadores,\n",
+        "programação e inteligência artificial. Tenho facilidade\n",
+        "para resolver problemas e aprender coisas novas.\n",
+        "Gostaria de trabalhar em uma área que ofereça boas\n",
+        "oportunidades profissionais e crescimento no futuro.\n",
+        "Ainda não tenho experiência profissional.\n",
+        "Quais carreiras você recomenda para mim?\n",
+        "Explique pelo menos três profissões, suas atividades,\n",
+        "habilidades necessárias, possibilidades de crescimento\n",
+        "e como posso começar a estudar para entrar nessas áreas.\n",
+        "\"\"\"\n",
+        "\n",
+        "# Função para executar e medir tokens\n",
+        "def testar_prompt(nome, prompt):\n",
+        "\n",
+        "    response = client.chat.completions.create(\n",
+        "        model=\"nvidia/nemotron-3-ultra-550b-a55b:free\",\n",
+        "        messages=[\n",
+        "            {\"role\": \"system\", \"content\": instructions},\n",
+        "            {\"role\": \"user\", \"content\": prompt}\n",
+        "        ]\n",
+        "    )\n",
+        "\n",
+        "    uso = response.usage\n",
+        "\n",
+        "    print(\"\\n\" + \"=\" * 45)\n",
+        "    print(nome)\n",
+        "    print(\"=\" * 45)\n",
+        "\n",
+        "    print(\"Resposta do mentor:\")\n",
+        "    print(response.choices[0].message.content)\n",
+        "\n",
+        "    print(\"\\nConsumo de tokens:\")\n",
+        "    print(\"Tokens de entrada:\", uso.prompt_tokens)\n",
+        "    print(\"Tokens de saída:\", uso.completion_tokens)\n",
+        "    print(\"Total de tokens:\", uso.total_tokens)\n",
+        "\n",
+        "    return uso\n",
+        "\n",
+        "\n",
+        "# TESTE 1\n",
+        "uso_curto = testar_prompt(\"TESTE 1 - PROMPT CURTO\", prompt_curto)\n",
+        "\n",
+        "# TESTE 2\n",
+        "uso_detalhado = testar_prompt(\"TESTE 2 - PROMPT DETALHADO\", prompt_detalhado)\n",
+        "\n",
+        "# Comparação\n",
+        "print(\"\\n========== COMPARAÇÃO FINAL ==========\")\n",
+        "\n",
+        "print(\"Total do prompt curto:\", uso_curto.total_tokens)\n",
+        "print(\"Total do prompt detalhado:\", uso_detalhado.total_tokens)\n",
+        "\n",
+        "if uso_curto.total_tokens > uso_detalhado.total_tokens:\n",
+        "    print(\"O prompt curto consumiu mais tokens.\")\n",
+        "elif uso_curto.total_tokens < uso_detalhado.total_tokens:\n",
+        "    print(\"O prompt detalhado consumiu mais tokens.\")\n",
+        "else:\n",
+        "    print(\"Os dois prompts consumiram a mesma quantidade de tokens.\")"
+      ]
+    }
+  ]
+}
